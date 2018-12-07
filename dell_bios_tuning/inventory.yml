@@ -1,0 +1,13 @@
+all:
+  children:
+    esx-hosts:
+      hosts:
+        esx01.example.com:
+          idrac_ip: 192.168.10.10
+        esx02.example.com:
+          idrac_ip: 192.168.10.11
+        esx03.example.com:
+          idrac_ip: 192.168.10.12
+  vars:
+    redfish_username: root
+    redfish_password: mySecretPW
