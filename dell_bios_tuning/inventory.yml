@@ -1,6 +1,6 @@
 all:
   children:
-    esx-hosts:
+    esx_hosts:
       hosts:
         esx01.example.com:
           idrac_ip: 192.168.10.10

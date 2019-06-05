@@ -1,14 +1,14 @@
-- hosts: esx-hosts
+- hosts: esx_hosts
   connection: local
   tasks:
     - name: Set Power Management Profile to Custom
       redfish_config:
         category: Systems
         command: SetBiosAttributes
-        bios_attr_name: SysProfile
-        bios_attr_value: Custom
+        bios_attribute_name: SysProfile
+        bios_attribute_value: Custom
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
@@ -16,10 +16,10 @@
       redfish_config:
         category: Systems
         command: SetBiosAttributes
-        bios_attr_name: ProcPwrPerf
-        bios_attr_value: OsDbpm
+        bios_attribute_name: ProcPwrPerf
+        bios_attribute_value: OsDbpm
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
@@ -27,10 +27,10 @@
       redfish_config:
         category: Systems
         command: SetBiosAttributes
-        bios_attr_name: MemFrequency
-        bios_attr_value: MaxPerf
+        bios_attribute_name: MemFrequency
+        bios_attribute_value: MaxPerf
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
@@ -38,10 +38,10 @@
       redfish_config:
         category: Systems
         command: SetBiosAttributes
-        bios_attr_name: ProcTurboMode
-        bios_attr_value: Enabled
+        bios_attribute_name: ProcTurboMode
+        bios_attribute_value: Enabled
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
@@ -49,10 +49,10 @@
       redfish_config:
         category: Systems
         command: SetBiosAttributes
-        bios_attr_name: ControlledTurbo
-        bios_attr_value: Disabled
+        bios_attribute_name: ControlledTurbo
+        bios_attribute_value: Disabled
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
@@ -60,10 +60,10 @@
       redfish_config:
         category: Systems
         command: SetBiosAttributes
-        bios_attr_name: ProcC1E
-        bios_attr_value: Enabled
+        bios_attribute_name: ProcC1E
+        bios_attribute_value: Enabled
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
@@ -71,10 +71,10 @@
       redfish_config:
         category: Systems
         command: SetBiosAttributes
-        bios_attr_name: ProcCStates
-        bios_attr_value: Enabled
+        bios_attribute_name: ProcCStates
+        bios_attribute_value: Enabled
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
@@ -82,10 +82,10 @@
       redfish_config:
         category: Systems
         command: SetBiosAttributes
-        bios_attr_name: MemPatrolScrub
-        bios_attr_value: Standard
+        bios_attribute_name: MemPatrolScrub
+        bios_attribute_value: Standard
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
@@ -93,10 +93,10 @@
       redfish_config:
         category: Systems
         command: SetBiosAttributes
-        bios_attr_name: MemRefreshRate
-        bios_attr_value: 1x
+        bios_attribute_name: MemRefreshRate
+        bios_attribute_value: 1x
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
@@ -104,10 +104,10 @@
       redfish_config:
         category: Systems
         command: SetBiosAttributes
-        bios_attr_name: UncoreFrequency
-        bios_attr_value: MaxUFS
+        bios_attribute_name: UncoreFrequency
+        bios_attribute_value: MaxUFS
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
@@ -115,10 +115,10 @@
       redfish_config:
         category: Systems
         command: SetBiosAttributes
-        bios_attr_name: EnergyPerformanceBias
-        bios_attr_value: MaxPower
+        bios_attribute_name: EnergyPerformanceBias
+        bios_attribute_value: MaxPower
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
@@ -126,18 +126,18 @@
       redfish_config:
         category: Systems
         command: SetBiosAttributes
-        bios_attr_name: MonitorMwait
-        bios_attr_value: Enabled
+        bios_attribute_name: MonitorMwait
+        bios_attribute_value: Enabled
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
   handlers:
     - name: schedule BIOS setting update
-      redfish_command:
+      idrac_redfish_command:
         category: Systems
         command: CreateBiosConfigJob
         baseuri: "{{ idrac_ip }}"
-        user: "{{ redfish_username }}"
+        username: "{{ redfish_username }}"
         password: "{{ redfish_password }}"
