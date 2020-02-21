@@ -133,6 +133,17 @@
         password: "{{ redfish_password }}"
       notify: "schedule BIOS setting update"
 
+    - name: Disable CPU Interconnect Bus Link Power Management
+      redfish_config:
+        category: Systems
+        command: SetBiosAttributes
+        bios_attribute_name: CpuInterconnectBusLinkPower
+        bios_attribute_value: Disabled
+        baseuri: "{{ idrac_ip }}"
+        username: "{{ redfish_username }}"
+        password: "{{ redfish_password }}"
+      notify: "schedule BIOS setting update"
+
   handlers:
     - name: schedule BIOS setting update
       idrac_redfish_command:
