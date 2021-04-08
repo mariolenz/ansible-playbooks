@@ -1,0 +1,173 @@
+- hosts: esx_hosts
+  vars:
+    domainname: "{{ inventory_hostname | regex_replace('^[^.]*.', '') }}"
+  connection: local
+  gather_facts: no
+
+  pre_tasks:
+    - name: Gathering System Inventory Facts
+      redfish_info:
+        category: Systems
+        command: GetSystemInventory
+        baseuri: "{{ idrac_ip }}"
+        username: "{{ idrac_username }}"
+        password: "{{ idrac_password }}"
+      register: redfish_info
+
+  tasks:
+    - name: Install ESXi
+      block:
+        - name: Ensure no old kickstart file is lying around
+          file:
+            path: "{{ playbook_dir }}/tmp/{{ inventory_hostname }}/ks.cfg"
+            state: absent
+
+        - name: Ensure no old custom ISO is lying around
+          file:
+            path: "/data/www/iso/{{ inventory_hostname.split('.')[0] }}.iso"
+            state: absent
+
+        - name: Create temp directory for kickstart file
+          file:
+            path: "{{ playbook_dir }}/tmp/{{ inventory_hostname }}"
+            state: directory
+
+        - name: Creating kickstart file with proper automation content
+          copy:
+            force: true
+            dest: "{{ playbook_dir }}/tmp/{{ inventory_hostname }}/ks.cfg"
+            content: |
+              vmaccepteula
+              clearpart --firstdisk="DELLBOSS VD" --overwritevmfs
+              install --firstdisk="DELLBOSS VD" --overwritevmfs
+              keyboard German
+              serialnum --esx=55204-0T445-H70G1-0AJK0-9RT45
+              rootpw --iscrypted "$6$WhaozYBUtF2dctwb$m3jk1.4xbd9uZHRufAMlZ/1MzI3KR5x9Ay9s6O1AC994h9JW2sbrOyFNW914Klek96QlbL9WeYbVeMROJcWFt1"
+              network --bootproto=static --addvmportgroup=0 --vlanid={{ networks['mgmt']['vlan'] }} --ip={{ mgmt_ip }} --netmask={{ networks['mgmt']['network']['subnet_mask'] }} --gateway={{ networks['mgmt']['network']['default_gateway'] }} --nameserver="{{ dns_servers[0] }},{{ dns_servers[1] }}" --hostname="{{ inventory_hostname }}"
+              reboot
+
+        - name: Create custom ESXi install ISO
+          shell: >
+            xorriso
+            -indev "{{ playbook_dir }}/iso/VMware-VMvisor-Installer-7.0U2-17630552.x86_64.iso"
+            -outdev "/data/www/iso/{{ inventory_hostname.split('.')[0] }}.iso"
+            -boot_image any keep
+            -update "{{ playbook_dir }}/files/boot.cfg" /BOOT.CFG
+            -update "{{ playbook_dir }}/files/boot.cfg" /EFI/BOOT/BOOT.CFG
+            -update "{{ playbook_dir }}/tmp/{{ inventory_hostname }}/ks.cfg" /KS.CFG
+
+        - name: Make custom ESXi ISO world readable
+          file:
+            path: "/data/www/iso/{{ inventory_hostname.split('.')[0] }}.iso"
+            state: file
+            mode: '0644'
+
+        - name: Start web server
+          shell: sudo systemctl start httpd
+          run_once: true
+
+        - name: Mount ISO
+          uri:
+            body: 
+              Image: 'http://{{ webserver }}/iso/{{ inventory_hostname.split(".")[0] }}.iso'
+            method: POST
+            body_format: json
+            force_basic_auth: yes
+            headers:
+              Content-Type: "application/json"
+              accept: 'application/json'
+              OData-Version: '4.0'
+            status_code: 204
+            url: 'https://{{ idrac_ip }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.InsertMedia'
+            url_password: "{{ idrac_password }}"
+            url_username: "{{ idrac_username }}"
+            use_proxy: no
+            validate_certs: no
+
+        - name: Set BootOnce
+          idrac_redfish_config:
+            category: Manager
+            command: SetManagerAttributes
+            manager_attribute_name: "ServerBoot.1.BootOnce"
+            manager_attribute_value: "Enabled"
+            baseuri: "{{ idrac_ip }}"
+            username: "{{ idrac_username }}"
+            password: "{{ idrac_password }}"
+
+        - name: Set BootOnce Media to virtual CD/DVD
+          idrac_redfish_config:
+            category: Manager
+            command: SetManagerAttributes
+            manager_attribute_name: "ServerBoot.1.FirstBootDevice"
+            manager_attribute_value: "VCD-DVD"
+            baseuri: "{{ idrac_ip }}"
+            username: "{{ idrac_username }}"
+            password: "{{ idrac_password }}"
+
+        - name: Power on
+          redfish_command:
+            category: Systems
+            command: PowerOn
+            baseuri: "{{ idrac_ip }}"
+            username: "{{ idrac_username }}"
+            password: "{{ idrac_password }}"
+
+        - name: Pause
+          pause:
+            minutes: 5
+
+        - name: Waiting for custom installation to complete...
+          wait_for:
+            delay: 300
+            sleep: 20
+            host: "{{ inventory_hostname }}"
+            port: 443
+            timeout: 1800
+          ignore_errors: yes
+
+        - name: Unmount ISO
+          uri:
+            body: "{}"
+            method: POST
+            body_format: json
+            force_basic_auth: yes
+            headers:
+              Content-Type: 'application/json'
+              accept: 'application/json'
+              OData-Version: '4.0'
+            status_code: 204
+            url: 'https://{{ idrac_ip }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.EjectMedia'
+            url_password: "{{ idrac_password }}"
+            url_username: "{{ idrac_username }}"
+            use_proxy: no
+            validate_certs: no
+
+        - name: Stop web server
+          shell: sudo systemctl stop httpd
+          run_once: true
+
+        - name: Delete temp directory for kickstart file
+          file:
+            path: "{{ playbook_dir }}/tmp/{{ inventory_hostname }}"
+            state: absent
+
+        - name: Delete custom ESXi install ISO
+          file:
+            path: "/data/www/iso/{{ inventory_hostname.split('.')[0] }}.iso"
+            state: absent
+
+        - name: Add ESXi Host to vCenter
+          vmware_host:
+            hostname: '{{ vcenter_ip }}'
+            username: '{{ vcenter_username }}'
+            password: '{{ vcenter_password }}'
+            validate_certs: False
+            datacenter: '{{ datacenter_name  }}'
+            folder: '/{{ datacenter_name  }}/host/Aufbau'
+            esxi_hostname: '{{ inventory_hostname }}'
+            esxi_username: 'root'
+            esxi_password: '{{ vcenter_password }}'
+            state: present
+          delegate_to: localhost
+          ignore_errors: yes
+      when: redfish_info['redfish_facts']['system']['entries'][0][1]['PowerState'] == "Off"

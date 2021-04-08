@@ -1,0 +1,16 @@
+all:
+  children:
+    esx_hosts:
+      hosts:
+        esx01.example.com:
+          idrac_ip: 192.168.10.10
+          mgmt_ip: 192.168.11.10
+        esx02.example.com:
+          idrac_ip: 192.168.10.11
+          mgmt_ip: 192.168.11.11
+        esx03.example.com:
+          idrac_ip: 192.168.10.12
+          mgmt_ip: 192.168.11.12
+  vars:
+    idrac_username: root
+    idrac_password: mySecretPW
