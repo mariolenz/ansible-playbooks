@@ -1,6 +1,6 @@
 This playbook creates a custom ESXi ISO including a kickstart file to configure networking, boots the server with it and installs ESXi. Tested with ansible 2.9 and Dell PowerEdge R740xd with a BOSS card but should also work for other 14th generation PowerEdge servers and, hopefully, with later ansible versions. If you don't have a BOSS card you would need to change `--firstdisk="DELLBOSS VD"`, for example to `--firstdisk=local`.
 
-Inspired by [baremetalesxi](https://github.com/bryansullins/baremetalesxi) although I'm using [GNU xorriso](https://www.gnu.org/software/xorriso/) to create the ISO instead of mkisofs.
+Inspired by [baremetalesxi](https://github.com/bryansullins/baremetalesxi) but I'm using [GNU xorriso](https://www.gnu.org/software/xorriso/) to create the ISO instead of mkisofs.
 
 What you need:
 * An ESXi install ISO in `iso` (I'm using VMware-VMvisor-Installer-7.0U2-17630552.x86_64.iso here)
