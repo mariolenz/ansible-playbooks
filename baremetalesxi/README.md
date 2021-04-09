@@ -6,7 +6,7 @@ What you need:
 * An ESXi install ISO in `iso` (I'm using VMware-VMvisor-Installer-7.0U2-17630552.x86_64.iso here)
 * `GNU xorriso`
 * A web server (I'm using Apache here with `DocumentRoot "/data/www"`)
-* The playbook assumes you are not root, so your user needs permissions to write files to /data/www and also to start and stop the web server via sudo without a password
+* The playbook assumes you are not root, so your user needs permissions to write files to /data/www/iso/ and also to start and stop the web server via sudo without a password
 
 If you use a different install ISO you have to:
 1. Extract `boot.cfg` or `efi/boot/boot.cfg` from it (they seem to be identical, at least in the ISO I'm using)
