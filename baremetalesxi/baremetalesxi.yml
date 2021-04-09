@@ -5,7 +5,7 @@
   gather_facts: no
 
   pre_tasks:
-    - name: Gathering System Inventory Facts
+    - name: Gathering System Inventory Info
       redfish_info:
         category: Systems
         command: GetSystemInventory
@@ -155,19 +155,4 @@
           file:
             path: "/data/www/iso/{{ inventory_hostname.split('.')[0] }}.iso"
             state: absent
-
-        - name: Add ESXi Host to vCenter
-          vmware_host:
-            hostname: '{{ vcenter_ip }}'
-            username: '{{ vcenter_username }}'
-            password: '{{ vcenter_password }}'
-            validate_certs: False
-            datacenter: '{{ datacenter_name  }}'
-            folder: '/{{ datacenter_name  }}/host/Aufbau'
-            esxi_hostname: '{{ inventory_hostname }}'
-            esxi_username: 'root'
-            esxi_password: '{{ vcenter_password }}'
-            state: present
-          delegate_to: localhost
-          ignore_errors: yes
       when: redfish_info['redfish_facts']['system']['entries'][0][1]['PowerState'] == "Off"

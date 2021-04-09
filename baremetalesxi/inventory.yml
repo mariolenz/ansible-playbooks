@@ -14,3 +14,13 @@ all:
   vars:
     idrac_username: root
     idrac_password: mySecretPW
+    webserver: "webserver.your.domain"
+    networks:
+      mgmt:
+        vlan: 1234
+        network:
+          subnet_mask: 255.255.255.0
+          default_gateway: 192.168.11.1
+    dns_servers:
+      - 1.2.3.4
+      - 5.6.7.8
